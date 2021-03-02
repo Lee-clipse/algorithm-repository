@@ -1,2 +1,2 @@
 # baekjoon_project
-baekjoon_project_0302
+baekjoon_project_from0302
