@@ -15,7 +15,7 @@ void setQueen(int pos) {
     }
     for (int i = 0; i < N; i++) {
         bool flag = true;
-        for (int j = i; j < pos; j++) {
+        for (int j = 0; j < pos; j++) {
             if (visited[j] == i || abs(visited[j]-i) == (pos-j)) {
                 flag = false;
                 break;
