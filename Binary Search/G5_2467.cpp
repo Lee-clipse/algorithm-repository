@@ -1,46 +1,38 @@
-#include <iostream>
+#include <bits/stdc++.h>
+#define fastio cin.tie(0)->sync_with_stdio(0)
+
 using namespace std;
 
-const int MAX = 100000 + 1;
+const int maxN = 100010;
 
 int N;
-long long int arr[MAX];
-long long int resA, resB;
+long arr[maxN];
 
 int main() {
+	fastio;
+    cin >> N;
+    for (int i = 0; i < N; i++) {
+        cin >> arr[i];
+    }
 
-	//입력
-	cin >> N;
-	for (int i = 0; i < N; i++) {
-		cin >> arr[i];
-	}
+    int left = 0, right = N-1;
+    /* for safety */
+    int val = abs(arr[left] + arr[right]);
+    int res1 = left, res2 = right;
 
-	//양쪽에서 다가오는 index의 초기값
-	int left = 0;
-	int right = N - 1;
+    while (left < right) {
+        /* using two pointer instead of 'mid = (lo + hi) / 2' */
+        int tmp = arr[left] + arr[right];
+        if (abs(tmp) < val) {
+            val = abs(tmp);
+            res1 = left, res2 = right;
+        }
+        else if (tmp > 0) {
+            right--;
+        } else {
+            left++;
+        }
+    }
 
-	//결과값의 초기값
-	int resLiquid = abs(arr[left] + arr[right]);
-	resA = arr[left];
-	resB = arr[right];
-
-	//양쪽에서 다가오는 반복, 모든 경우 탐색 완료시 종료
-	while (left < right) {
-		int tmpLiquid = arr[left] + arr[right];
-		if (abs(tmpLiquid) < resLiquid) {
-			resLiquid = abs(tmpLiquid);
-			resA = arr[left];
-			resB = arr[right];
-		}
-
-		if (tmpLiquid < 0) {
-			left++;
-		}
-		else {
-			right--;
-		}
-	}
-
-	//출력
-	cout << resA << " " << resB << "\n";
+    cout << arr[res1] << " " << arr[res2] << "\n";
 }
