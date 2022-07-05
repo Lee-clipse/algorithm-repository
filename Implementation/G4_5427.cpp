@@ -3,13 +3,11 @@
 
 using namespace std;
 
-// 4:32 ~ 5:24 로직 설계의 치명적인 오류를 깨닫고 중단
-
 const int maxW = 1010;
 
 int t, w, h;
 
-vector<vector<char>> building_map(maxW, vector<char>(maxW));
+string maps[maxW];
 
 int visited[maxW][maxW];
 int fire_visited[maxW][maxW];
@@ -17,91 +15,68 @@ int fire_visited[maxW][maxW];
 int dY[4] = {-1, 0, 1, 0};
 int dX[4] = {0, 1, 0, -1};
 
-int begin_y, begin_x;
+int BFS(pair<int, int> start, queue<pair<int, int>> fire) {
+    int result = -1;
+    queue<pair<int, int>> Q;
+    Q.push(start);
 
-bool isSafe(int y, int x) {
-    for (int i = 0; i < 4; i++) {
-        if (building_map[y + dY[i]][x + dX[i]] == '*') return false;
-    }
-    return true;
-}
+    int turn = 1;
+    while (!Q.empty()) {
+        
+        // 붙 붙이기
+        int fire_count = fire.size();
+        for (int i = 0; i < fire_count; i++) {
+            int yy = fire.front().first;
+            int xx = fire.front().second;
+            fire.pop();
 
-bool isEscape(int y, int x) {
-    for (int i = 0; i < 4; i++) {
-        if (building_map[y + dY[i]][x + dX[i]] == '*') return false;
-    }
-    return true;
-}
+            for (int j = 0; j < 4; j++) {
+                int ny = yy + dY[j];
+                int nx = xx + dX[j];
 
-void moveFire() {
-    memset(fire_visited, false, sizeof(fire_visited));
-
-    for (int i = 1; i <= h; i++) {
-        for (int j = 1; j <= w; j++) {
-            if (!fire_visited[i][j] && building_map[i][j] == '*') {
-                fire_visited[i][j] = true;
-
-                for (int k = 0; k < 4; k++) {
-                    int ny = i + dY[k];
-                    int nx = j + dX[k];
-
-                    // 미방문이며 . 이거나 @ 인 칸에 불을 붙임
-                    if ((building_map[ny][nx] == '.' || building_map[i + dY[k]][j + dX[k]] == '@')) {
-                        building_map[ny][nx] = '*';
-                        fire_visited[ny][nx] = true;
+                // 벽이 아니고 범위 내라면 불 붙히기
+                if (0 <= ny && ny < h && 0 <= nx && nx < w) {
+                    if (fire_visited[ny][nx] == 0 && maps[ny][nx] != '#') {
+                        maps[ny][nx] = '*';
+                        fire.push({ny, nx});
+                        fire_visited[ny][nx] = 1;
                     }
                 }
             }
         }
-    }
-}
 
-int doEscape(int y, int x) {
-    int turn = 1;
-    memset(visited, false, sizeof(visited));
+        // 탈출 시도
+        int move_count = Q.size();
+        for (int i = 0; i < move_count; i++) {
+            int yy = Q.front().first;
+            int xx = Q.front().second;
+            Q.pop();
 
-    queue<pair<int, int>> Q, next_Q;
-    Q.push({y, x});
-    visited[y][x] = true;
-    next_Q = Q;
+            // 탈출 성공
+            if (yy == 0 || yy == h-1 || xx == 0 || xx == w-1) {
+                return turn;
+            }
 
-    while (!next_Q.empty()) {
-        Q = next_Q;
-        next_Q = queue<pair<int, int>>();
+            for (int j = 0; j < 4; j++) {
+                int ny = yy + dY[j];
+                int nx = xx + dX[j];
 
-        int yy = Q.front().first;
-        int xx = Q.front().second;
-        building_map[yy][xx] = '@';
-        Q.pop();
-
-        for (int i = 0; i < 4; i++) {
-            int ny = yy + dY[i];
-            int nx = xx + dX[i];
-
-            // 벽 또는 불로는 이동할 수 없음    
-            if (!visited[ny][nx] && building_map[ny][nx] != '#' && building_map[ny][nx] != '*') {
-                
-                // 탈출 성공
-                if (ny == 0 || ny == h+1 || nx == 0 || nx == w+1) {
-                    return turn;
-                }
-
-                // 불이 붙으려는 칸이 아니라면 이동
-                if (isSafe(ny, nx)) {
-                    next_Q.push({ny, nx});
-                    visited[ny][nx] = true;
+                // 범위 내에서
+                if (0 <= ny && ny < h && 0 <= nx && nx < w) {
+                    
+                    // 벽과 불이 아닌 곳으로
+                    if (visited[ny][nx] == 0 && maps[ny][nx] != '#' && maps[ny][nx] != '*') {
+                        Q.push({ny, nx});
+                        visited[ny][nx] = 1;
+                    }
                 }
             }
         }
-
-        // 불 진행
-        building_map[yy][xx] = '.';
-        moveFire();
+        
         turn++;
     }
 
-
-    return turn;
+    return result;
 }
 
 int main() {
@@ -110,21 +85,32 @@ int main() {
     while (t--) {
         cin >> w >> h;
 
-        for (int i = 1; i <= h; i++) {
-            for (int j = 1; j <= w; j++) {
-                cin >> building_map[i][j];
+        pair<int, int> start_place;
+        queue<pair<int, int>> fire_place;
+        for (int i = 0; i < h; i++) {
+            cin >> maps[i];
 
-                if (building_map[i][j] == '@') {
-                    begin_y = i;
-                    begin_x = j;
+            for (int j = 0; j < maps[i].size(); j++) {
+                if (maps[i][j] == '@') {
+                    start_place = {i, j};
+                    visited[i][j] = 1;
+                }
+                else if (maps[i][j] == '*') {
+                    fire_place.push({i, j});
+                    fire_visited[i][j] = 1;
                 }
             }
         }
 
-        int result = doEscape(begin_y, begin_x);
-        if (result == -1) { 
-            cout << "IMPOSSIBLE\n"; 
+        memset(visited, 0, sizeof(visited));
+        memset(fire_visited, 0, sizeof(fire_visited));
+
+        int result = BFS(start_place, fire_place);
+        if (result == -1) {
+            cout << "IMPOSSIBLE\n";
         }
-        else cout << result << "\n";
-    }   
+        else {
+            cout << result << "\n";
+        }
+    }
 }
