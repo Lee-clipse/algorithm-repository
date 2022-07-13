@@ -1,98 +1,66 @@
-#include <iostream>
-#include <cstring>
+#include <bits/stdc++.h>
+#define fastio cin.tie(0)->sync_with_stdio(0)
 
 using namespace std;
 
-void a(){int a=0;for(int i=0;i<4000000000;i++)a=i*i;}
+// 09:03 ~ 09:19
 
-const int maxS = 100;
+const int maxN = 105;
 
-int S, N;
-int arr[maxS+1];
-// start from 1 
+int N, T;
 
-void Input ()
-{
-	cin >> S;
-	for (int i = 1; i <= S; i++)
-	{
-		cin >> arr[i];
-	}
-	cin >> N;
+vector<int> S(maxN);
+
+void OffOnOff(int act, int pos) {
+    if (act == 1) {
+        for (int i = pos; i <= N; i++) {
+            if (i % pos == 0) {
+                S[i] ^= 1;
+            }
+        }
+    }
+    else {
+        int left = pos-1, right = pos+1;
+        while (1 <= left && right <= N) {
+            if (S[left] != S[right]) {
+                break;
+            }
+            left--; right++;
+        }
+        for (int i = left+1; i <= right-1; i++) {
+            S[i] ^= 1;
+        }
+    }
 }
 
-void Change (int s, int p)
-{
-	if (s == 1)
-	{
-		int k = 1;
-		
-		while (p*k <= S)
-		{
-			arr[p*k] ^= 1;
-			k++;
-		}
-	}
+void print() {
+    int idx = 1;
+    for (int i = 0; i < N/20; i++) {
+        for (int j = idx; j < idx+20; j++) {
+            cout << S[j] << " ";
+        } 
+        cout << "\n";
+        idx += 20;
+    }
 
-	if (s == 2)
-	{
-		int l = p, r = p;
-		
-		while (1<=l-1 && r+1<=S)
-		{
-			if (arr[l-1] != arr[r+1])
-			{
-				break;
-			}
-			l--; r++;
-		}
-
-		for (int i = l; i <= r; i++)
-		{
-			arr[i] ^= 1;
-		}
-	}
+    for (int i = idx; i <= N; i++) {
+        cout << S[i] << " ";
+    }
 }
 
-void Output ()
-{
-	int idx = 1;
-	for (int i = 0; i < S/20; i++)
-	{
-		for (int j = idx; j < idx+20; j++)
-		{
-			cout << arr[j] << " ";
-		}
-		
-		cout << "\n";
-		idx += 20;
-	}
-	
-	for (int i = idx; i <= S; i++)
-	{
-		cout << arr[i] << " ";
-	}
-}
+int main() {
+	fastio;
+    cin >> N;
+    for (int i = 1; i <= N; i++) {
+        cin >> S[i];
+    }
 
-void Solve ()
-{
-	Input();
-	
-	int s, p;
-	for (int i = 0; i < N; i++)
-	{
-		cin >> s >> p;
-		
-		Change(s, p);
-	}
-	
-	Output();
-}
+    cin >> T;
+    for (int i = 0; i < T; i++) {
+        int act, pos;
+        cin >> act >> pos;
+        OffOnOff(act, pos);
+    }
 
-int main ()
-{
-	Solve();
-	
-	a();
-	return 0;
+    print();
 }
