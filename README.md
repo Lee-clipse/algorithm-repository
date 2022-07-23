@@ -2,8 +2,6 @@
 
 [![Solved.ac Profile](http://mazassumnida.wtf/api/v2/generate_badge?boj=edac99)](https://solved.ac/edac99)
 
----
-
 # 1. 분류 기준
 
 ## 1.1. 폴더 명
